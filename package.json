@@ -1,0 +1,19 @@
+{
+  "name": "staking-dev-server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0"
+  },
+  "dependencies": {
+    "@unique-nft/sdk": "^0.2.5",
+    "@unique-nft/utils": "^0.3.2"
+  }
+}
