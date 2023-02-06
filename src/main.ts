@@ -3,8 +3,8 @@ import {Client, Sdk} from '@unique-nft/sdk'
 import Extension, {IPolkadotExtensionAccount} from '@unique-nft/utils/extension'
 
 export const SDK_BASE_URLS = {
-  quartz: 'https://rest.quartz.uniquenetwork.dev/v1',
   opal: 'https://rest.opal.uniquenetwork.dev/v1',
+  quartz: 'https://rest.quartz.uniquenetwork.dev/v1',
 }
 
 // export enum sdkBaseUrl {
@@ -48,41 +48,49 @@ export async function getAccountById(accountId: string, accounts?: IPolkadotExte
 }
 
 // helper
-function initSdkHelper(sdkInstance?: Client , nameChain?: sdkBaseUrl): Client {
+function initSdkHelper(sdkInstance?: Client , nameChain?: string): Client {
     if (!sdkInstance && !nameChain) {
         throw new Error('Set one of the parameters sdkInstance, nameChain for totalStaked function');
     }
     return sdkInstance || initSDK(nameChain);
 }
 
-function initSDK(nameChain: sdkBaseUrl) {
-    const options = {
-        baseUrl: nameChain,
+export function initSDK(nameChain: string) {
+    if (!SDK_BASE_URLS[nameChain]) {
+        throw new Error('Chain not found');
     }
-    return new Sdk(options);
+    const options = {
+        baseUrl: SDK_BASE_URLS[nameChain],
+    }
+    const client = new Sdk(options);
+    console.log(`SDK initialized at ${client.options.baseUrl}`);
+    return client;
 }
 
-async function totalStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: sdkBaseUrl) {
+export async function totalStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: string) {
     if (!account) {
         throw new Error('Set account for totalStaked function');
     }
     let sdk = initSdkHelper(sdkInstance, nameChain);
-    return await sdk.stateQuery.execute({
+    const response = await sdk.stateQuery.execute({
             endpoint: 'rpc',
             module: 'appPromotion',
             method: 'totalStaked',
         },
         {args: [{Substrate: account.address} as any]}
     )
+    console.log(response);
+    return response;
 }
 
-async function amountCanBeStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: sdkBaseUrl) {
+export async function amountCanBeStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: string) {
     if (!account) {
         throw new Error('Set account for totalStaked function');
     }
     let sdk = initSdkHelper(sdkInstance, nameChain);
 
     const balanceResponse = await sdk.balance.get({address: account.address})
+    console.log(balanceResponse.availableBalance);
     return balanceResponse.availableBalance;
 }
 
@@ -191,8 +199,8 @@ const registerStakingForm = async () => {
 //     registerStakingForm().catch(err => console.error(err))
 //   })
 // }
-(async () => {
-    await sleep(2000); // without a pause an error extensionFound occurs
-    console.log(await getAccountList());
+// (async () => {
+    // await sleep(2000); // without a pause an error extensionFound occurs
+    // console.log(await getAccountList());
     // await totalStaked(sdkBaseUrl.opal);
-})();
+// })();

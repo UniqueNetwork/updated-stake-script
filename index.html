@@ -11,7 +11,7 @@
 
     <script type="module" src="/src/main.ts"></script>
     <script type="module">
-      import { SDK_BASE_URLS, getAccountList, getAccountById } from '/src/main.ts';
+      import { SDK_BASE_URLS, getAccountList, getAccountById, initSDK, totalStaked, amountCanBeStaked } from '/src/main.ts';
 
       (async () => {
         console.log('SDK_BASE_URLS');
@@ -66,12 +66,40 @@
 
         const getAccountByIdButton = document.createElement('button')
         getAccountByIdButton.addEventListener('click', () => {
-          console.log(document.querySelector('input[name="account"]:checked').value);
           getAccountById(document.querySelector('input[name="account"]:checked').value)
         });
         getAccountByIdButton.innerHTML = 'getAccountById';
         document.body.appendChild(getAccountByIdButton);
         document.body.appendChild(document.createElement('br'));
+
+        const initSDKButton = document.createElement('button')
+        initSDKButton.addEventListener('click', () => {
+          initSDK(document.querySelector('input[name="chain"]:checked').value)
+        });
+        initSDKButton.innerHTML = 'initSDK';
+        document.body.appendChild(initSDKButton);
+        document.body.appendChild(document.createElement('br'));
+
+        const totalStakedButton = document.createElement('button')
+        totalStakedButton.addEventListener('click', async () => {
+          const account = await getAccountById(document.querySelector('input[name="account"]:checked').value);
+          const nameChain = document.querySelector('input[name="chain"]:checked').value;
+          totalStaked(account, undefined, nameChain);
+        });
+        totalStakedButton.innerHTML = 'totalStaked';
+        document.body.appendChild(totalStakedButton);
+        document.body.appendChild(document.createElement('br'));
+
+        const amountCanBeStakedButton = document.createElement('button')
+        amountCanBeStakedButton.addEventListener('click', async () => {
+          const account = await getAccountById(document.querySelector('input[name="account"]:checked').value);
+          const nameChain = document.querySelector('input[name="chain"]:checked').value;
+          amountCanBeStaked(account, undefined, nameChain);
+        });
+        amountCanBeStakedButton.innerHTML = 'amountCanBeStaked';
+        document.body.appendChild(amountCanBeStakedButton);
+        document.body.appendChild(document.createElement('br'));
+
 
       })()
     </script>
