@@ -30,6 +30,8 @@
         accountOrAccountIdOrAddress: undefined,
         output: '',
         accountIds: null,
+        sdk: undefined,
+        account: undefined,
         async setAccountIds() {
           this.accountIds = (await getAccountList()).map(el => (el.id));
         },
@@ -60,16 +62,20 @@
           return this.functionWrapperLogger(getAccountList, []);
         },
         getAccountById: async function(params) {
-          return this.functionWrapperLogger(getAccountById, params);
+          const account = await this.functionWrapperLogger(getAccountById, params)
+          this.account = account
+          return account
         },
         initSDK: async function(params) {
-          return this.functionWrapperLogger(initSDK, params);
+          const sdk = await this.functionWrapperLogger(initSDK, params)
+          this.sdk = sdk
+          return sdk
         },
         totalStaked: async function(params) {
-          return this.functionWrapperLogger(totalStaked, params);
+          return this.functionWrapperLogger(totalStaked, params)
         },
         amountCanBeStaked: async function(params) {
-          return this.functionWrapperLogger(amountCanBeStaked, params);
+          return this.functionWrapperLogger(amountCanBeStaked, params)
         },
         stake
       }).mount();
@@ -104,12 +110,18 @@
         <button style="display: block;" @click="getAccountList">getAccountList</button>
         <button style="display: block;" @click="getAccountById([accountOrAccountIdOrAddress])">getAccountById</button>
         <button style="display: block;" @click="initSDK([chainNameOrUrl])">initSDK</button>
-        <button style="display: block;" @click="totalStaked([accountOrAccountIdOrAddress, null, chainNameOrUrl])">totalStaked</button>
-        <button style="display: block;" @click="amountCanBeStaked([accountOrAccountIdOrAddress, null, chainNameOrUrl])">amountCanBeStaked</button>
+        <div v-for="[func, name] in [[totalStaked, 'totalStaked'], [amountCanBeStaked, 'amountCanBeStaked']]" :key="name">
+          <button @click="func([accountOrAccountIdOrAddress, chainNameOrUrl])">{{name}}</button>
+          <button :disabled="!sdk" @click="func([accountOrAccountIdOrAddress, sdk])">{{name}} (use sdk object)</button>
+          <button :disabled="!account" @click="func([account, chainNameOrUrl])">{{name}} (use account object)</button>
+          <button :disabled="!sdk || !account" @click="func([account, sdk])">{{name}} (use sdk and account objects)</button>
+        </div>
       </div>
 
       <h3>Output</h3>
-      <button style="display: block;" @click="output=''">clear</button>
+      <div v-if="sdk">Received instance sdk</div>{{sdk}}
+      <div v-if="account">Received account</div>
+      <button style="display: block;" @click="output=''; sdk=undefined; account=undefined">clear</button>
       <div>{{output}}</div>
     </div>
   </body>

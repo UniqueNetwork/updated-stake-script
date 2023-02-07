@@ -1,6 +1,7 @@
 
 import {Client, Sdk} from '@unique-nft/sdk'
 import Extension, {IPolkadotExtensionAccount} from '@unique-nft/utils/extension'
+import {Address} from '@unique-nft/utils'
 
 export const SDK_BASE_URLS = {
   opal: 'https://rest.opal.uniquenetwork.dev/v1',
@@ -29,67 +30,79 @@ export async function getAccountList(): Promise<IPolkadotExtensionAccount[]> {
     } else if (enablingResult.info.userHasWalletsButHasNoAccounts) {
         throw new Error('No accounts found. Please, create an account')
     }
-    console.log(enablingResult.accounts)
     return enablingResult.accounts;
 }
 
 // helper
-export async function getAccountById(accountId: string, accounts?: IPolkadotExtensionAccount[]): Promise<IPolkadotExtensionAccount> {
+export async function getAccountOrAddress(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, accounts?: IPolkadotExtensionAccount[]): Promise<IPolkadotExtensionAccount | string> {
+    if (!accountOrAccountIdOrAddress) throw new Error('Input parameter is empty')
+    if (typeof accountOrAccountIdOrAddress === 'object') {
+        if (!accountOrAccountIdOrAddress.address) throw new Error('Invalid input parameters')
+        return accountOrAccountIdOrAddress
+    }
     if (!accounts) {
-        accounts = await getAccountList();
+        accounts = await getAccountList()
     }
+    const account = accounts.find(el => (el.id === accountOrAccountIdOrAddress))
+    if (account) return account
+    const address = Address.validate.substrateAddress(accountOrAccountIdOrAddress)
+    //check address
+    if (!(account || address)) {
+        throw new Error('The input parameter is neither an address nor an account id')
+    }
+    return accountOrAccountIdOrAddress
+}
 
-    const accountArray = accounts.filter(el => (el.id === accountId));
-    if (!accountArray.length) {
-        throw new Error(`Account with id ${accountId} not found`);
-    }
-    console.log(accountArray[0]);
-    return accountArray[0];
+export async function getAccountById(accountId: string, accounts?: IPolkadotExtensionAccount[]): Promise<IPolkadotExtensionAccount> {
+    const account = await getAccountOrAddress(accountId, accounts)
+    if (typeof account === 'string') throw new Error('The input parameter is of the wrong type')
+    return account
+}
+
+function normalizeUrl(url: string): string {
+    return `https://${url}/v1`;
 }
 
 // helper
-function initSdkHelper(sdkInstance?: Client , chainName?: string): Client {
-    if (!sdkInstance && !chainName) {
-        throw new Error('Set one of the parameters sdkInstance, chainName for totalStaked function');
+export function initSDK(sdkInstanceOrChainNameOrUrl?: Client | string): Client {
+    if (!sdkInstanceOrChainNameOrUrl) throw new Error('Input parameter is empty')
+    if (typeof sdkInstanceOrChainNameOrUrl === 'object') {
+        if (sdkInstanceOrChainNameOrUrl instanceof Client) return sdkInstanceOrChainNameOrUrl
+        throw new Error('The input parameter is of the wrong type')
     }
-    return sdkInstance || initSDK(chainName);
-}
+    if (typeof sdkInstanceOrChainNameOrUrl !== 'string') throw new Error('The input parameter is of the wrong type')
+    const url = SDK_BASE_URLS[sdkInstanceOrChainNameOrUrl] || normalizeUrl(sdkInstanceOrChainNameOrUrl)
 
-export function initSDK(chainName: string) {
-    if (!SDK_BASE_URLS[chainName]) {
-        throw new Error('Chain not found');
-    }
     const options = {
-        baseUrl: SDK_BASE_URLS[chainName],
+        baseUrl: url
     }
-    const client = new Sdk(options);
-    console.log(`SDK initialized at ${client.options.baseUrl}`);
-    return client;
+    const client = new Sdk(options)
+    console.log(`SDK initialized at ${client.options.baseUrl}`)
+    return client
 }
 
-export async function totalStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: string) {
-    if (!account) {
-        throw new Error('Set account for totalStaked function');
-    }
-    let sdk = initSdkHelper(sdkInstance, chainName)
-    const response = await sdk.stateQuery.execute({
+export async function totalStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string) {
+    const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
+    const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
+    const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
+
+    const result = await sdk.stateQuery.execute({
             endpoint: 'rpc',
             module: 'appPromotion',
             method: 'totalStaked',
         },
-        {args: [{Substrate: account.address} as any]}
+        {args: [{Substrate: address} as any]}
     )
-    console.log(response);
-    return response;
+    // :todo value human to float
+    return result
 }
 
-export async function amountCanBeStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: string) {
-    if (!account) {
-        throw new Error('Set account for totalStaked function');
-    }
-    let sdk = initSdkHelper(sdkInstance, chainName);
+export async function amountCanBeStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string) {
+    const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
+    const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
+    const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
 
-    const balanceResponse = await sdk.balance.get({address: account.address})
+    const balanceResponse = await sdk.balance.get({address})
     console.log(balanceResponse.availableBalance);
     return balanceResponse.availableBalance;
 }
