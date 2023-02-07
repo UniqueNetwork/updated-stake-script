@@ -2,6 +2,7 @@
 import {Client, Sdk} from '@unique-nft/sdk'
 import Extension, {IPolkadotExtensionAccount} from '@unique-nft/utils/extension'
 import {Address} from '@unique-nft/utils'
+import {a} from "@unique-nft/utils/index-533455a6"
 
 export const SDK_BASE_URLS = {
   opal: 'https://rest.opal.uniquenetwork.dev/v1',
@@ -35,7 +36,7 @@ export async function getAccountList(): Promise<IPolkadotExtensionAccount[]> {
 
 // helper
 export async function getAccountOrAddress(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, accounts?: IPolkadotExtensionAccount[]): Promise<IPolkadotExtensionAccount | string> {
-    if (!accountOrAccountIdOrAddress) throw new Error('Input parameter is empty')
+    if (!accountOrAccountIdOrAddress) throw new Error('accountOrAccountIdOrAddress parameter in function getAccountOrAddress is empty')
     if (typeof accountOrAccountIdOrAddress === 'object') {
         if (!accountOrAccountIdOrAddress.address) throw new Error('Invalid input parameters')
         return accountOrAccountIdOrAddress
@@ -60,12 +61,13 @@ export async function getAccountById(accountId: string, accounts?: IPolkadotExte
 }
 
 function normalizeUrl(url: string): string {
+    // todo: parse string
     return `https://${url}/v1`;
 }
 
 // helper
-export function initSDK(sdkInstanceOrChainNameOrUrl?: Client | string): Client {
-    if (!sdkInstanceOrChainNameOrUrl) throw new Error('Input parameter is empty')
+export function initSDK(sdkInstanceOrChainNameOrUrl?: Client | string): Client {console.log(sdkInstanceOrChainNameOrUrl)
+    if (!sdkInstanceOrChainNameOrUrl) throw new Error('sdkInstanceOrChainNameOrUrl parameter in function initSDK is empty')
     if (typeof sdkInstanceOrChainNameOrUrl === 'object') {
         if (sdkInstanceOrChainNameOrUrl instanceof Client) return sdkInstanceOrChainNameOrUrl
         throw new Error('The input parameter is of the wrong type')
@@ -82,6 +84,8 @@ export function initSDK(sdkInstanceOrChainNameOrUrl?: Client | string): Client {
 }
 
 export async function totalStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string) {
+    console.log('sdkInstanceOrChainNameOrUrl')
+    console.log(sdkInstanceOrChainNameOrUrl)
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
     const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
@@ -107,40 +111,48 @@ export async function amountCanBeStaked(accountOrAccountIdOrAddress: IPolkadotEx
     return balanceResponse.availableBalance;
 }
 
-export async function stake(amountInit: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: string) {
-    if (!account) {
-        throw new Error('Set account for totalStaked function');
+async function convertAmount(sdk: Client, amountInit: number | string): Promise<string> {
+    const { decimals } = await sdk.common.chainProperties()
+    const amountInitString = typeof amountInit === 'number' ? amountInit.toString() : amountInit
+    const arr = amountInitString.split('.')
+    let amount = arr[0] !== '0' ? arr[0] : ''
+    if (arr[1]) {
+        amount += arr[1] + Array(decimals - arr[1].length).fill('0').join('')
+    } else {
+        amount += Array(decimals).fill('0').join('')
     }
-    let sdk = initSdkHelper(sdkInstance, chainName)
+    return amount
+}
 
-    const {decimals} = await sdk.common.chainProperties()
+export async function stake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string, amountInit: number | string) {
+    const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
+    const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
+    if (typeof account === 'string') throw new Error('Failed to get an account')
 
-    const amount = (BigInt(amountInit * 10**9) * (10n**(BigInt(decimals - 9)))).toString()
+    if (!amountInit) throw new Error('Amount parameter is empty')
+    const amount = await convertAmount(sdk, amountInit);
 
-    console.log(`You are going to stake ${amountInit} tokens or ${amount} wei`)
-
-    return await sdk.extrinsics.submitWaitResult({
+    return sdk.extrinsics.submitWaitResult({
         address: account.address,
         section: 'appPromotion',
         method: 'stake',
-        args: [amount.toString()],
-    })
+        args: [amount],
+    }, account.uniqueSdkSigner);
 }
 
-export async function unstake(account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: sdkBaseUrl) {
-    if (!account) {
-        throw new Error('Set account for totalStaked function');
-    }
-    let sdk = initSdkHelper(sdkInstance, chainName);
+export async function unstake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string) {
+    const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
+    const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
+    if (typeof account === 'string') throw new Error('Failed to get an account')
 
-    console.log('After the end of week this sum becomes completely free for further use');
-
-    return await sdk.extrinsics.submitWaitResult({
+    const result = await sdk.extrinsics.submitWaitResult({
         address: account.address,
         section: 'appPromotion',
         method: 'unstake',
         args: [],
-    })
+    }, account.uniqueSdkSigner)
+    console.log('After the end of week this sum becomes completely free for further use')
+    return result
 }
 
 async function balanceCanBeStaked(amount: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: sdkBaseUrl) {
