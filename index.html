@@ -10,7 +10,9 @@
     <div id="app"></div>
 
     <script type="module" src="/src/main.ts"></script>
+
     <script type="module">
+      import { createApp } from 'https://unpkg.com/petite-vue?module'
       import {
         SDK_BASE_URLS,
         getAccountList,
@@ -21,104 +23,94 @@
         stake
       } from '/src/main.ts';
 
-      (async () => {
-        console.log('SDK_BASE_URLS');
-        const keys = Object.keys(SDK_BASE_URLS);
-        console.log('keys');
-        console.log(keys);
-        let title = document.createElement('div');
-        title.textContent = 'Chains';
-        document.body.appendChild(title);
-        keys.forEach((name, i) => {
-          const el = document.createElement('input');
-          el.setAttribute('type', 'radio');
-          el.setAttribute('name', 'chain');
-          el.setAttribute('value', name);
-          const label = document.createElement('label');
-          label.setAttribute('for', name);
-          label.textContent = name;
-          if (!i) {
-            el.setAttribute('checked', 'checked');
+
+      createApp({
+        chainNames: Object.keys(SDK_BASE_URLS),
+        chainNameOrUrl: undefined,
+        accountOrAccountIdOrAddress: undefined,
+        output: '',
+        accountIds: null,
+        async setAccountIds() {
+          this.accountIds = (await getAccountList()).map(el => (el.id));
+        },
+        setChainNameOrUrl(value) {
+          if (value.target) {
+            if (value.target._value) this.chainNameOrUrl = value.target._value
+            else this.chainNameOrUrl = event.target.value;
           }
-          document.body.appendChild(el);
-          document.body.appendChild(label);
-          document.body.appendChild(document.createElement('br'));
-        });
-
-        const accountIds = (await getAccountList()).map(el => (el.id));
-        title = document.createElement('div');
-        title.textContent = 'Accounts';
-        document.body.appendChild(title);
-        accountIds.forEach((name, i) => {
-          const el = document.createElement('input');
-          el.setAttribute('type', 'radio');
-          el.setAttribute('name', 'account');
-          el.setAttribute('value', name);
-          const label = document.createElement('label');
-          label.setAttribute('for', name);
-          label.textContent = name;
-          if (!i) {
-            el.setAttribute('checked', 'checked');
+        },
+        setAccountOrAccountIdOrAddress(value) {
+          if (value.target) {
+            if (value.target._value) this.accountOrAccountIdOrAddress = value.target._value
+            else this.accountOrAccountIdOrAddress = value.target.value;
           }
-          document.body.appendChild(el);
-          document.body.appendChild(label);
-          document.body.appendChild(document.createElement('br'));
-        });
-
-        // buttons
-        const getBalanceButton = document.createElement('button')
-        getBalanceButton.addEventListener('click', getAccountList);
-        getBalanceButton.innerHTML = 'getAccountList';
-        document.body.appendChild(getBalanceButton);
-        document.body.appendChild(document.createElement('br'));
-
-        const getAccountByIdButton = document.createElement('button')
-        getAccountByIdButton.addEventListener('click', () => {
-          getAccountById(document.querySelector('input[name="account"]:checked').value)
-        });
-        getAccountByIdButton.innerHTML = 'getAccountById';
-        document.body.appendChild(getAccountByIdButton);
-        document.body.appendChild(document.createElement('br'));
-
-        const initSDKButton = document.createElement('button')
-        initSDKButton.addEventListener('click', () => {
-          initSDK(document.querySelector('input[name="chain"]:checked').value)
-        });
-        initSDKButton.innerHTML = 'initSDK';
-        document.body.appendChild(initSDKButton);
-        document.body.appendChild(document.createElement('br'));
-
-        const totalStakedButton = document.createElement('button')
-        totalStakedButton.addEventListener('click', async () => {
-          const account = await getAccountById(document.querySelector('input[name="account"]:checked').value);
-          const chainName = document.querySelector('input[name="chain"]:checked').value;
-          totalStaked(account, undefined, chainName);
-        });
-        totalStakedButton.innerHTML = 'totalStaked';
-        document.body.appendChild(totalStakedButton);
-        document.body.appendChild(document.createElement('br'));
-
-        const amountCanBeStakedButton = document.createElement('button')
-        amountCanBeStakedButton.addEventListener('click', async () => {
-          const account = await getAccountById(document.querySelector('input[name="account"]:checked').value);
-          const chainName = document.querySelector('input[name="chain"]:checked').value;
-          amountCanBeStaked(account, undefined, chainName);
-        });
-        amountCanBeStakedButton.innerHTML = 'amountCanBeStaked';
-        document.body.appendChild(amountCanBeStakedButton);
-        document.body.appendChild(document.createElement('br'));
-
-        const stakeButton = document.createElement('button')
-        stakeButton.addEventListener('click', async () => {
-          const account = await getAccountById(document.querySelector('input[name="account"]:checked').value);
-          const chainName = document.querySelector('input[name="chain"]:checked').value;
-          await stake(account, undefined, chainName);
-        });
-        stakeButton.innerHTML = 'stake';
-        document.body.appendChild(stakeButton);
-        document.body.appendChild(document.createElement('br'));
-
-      })()
+        },
+        async functionWrapperLogger(func, paramsArray) {
+          this.output = '';
+          const result = await func(...paramsArray);
+          console.log(result);
+          try {
+            this.output = JSON.stringify(result, null, 2);
+          } catch (e) {
+            this.output = 'Error parsing result object';
+          }
+          return result;
+        },
+        getAccountList: function() {
+          return this.functionWrapperLogger(getAccountList, []);
+        },
+        getAccountById: async function(params) {
+          return this.functionWrapperLogger(getAccountById, params);
+        },
+        initSDK: async function(params) {
+          return this.functionWrapperLogger(initSDK, params);
+        },
+        totalStaked: async function(params) {
+          return this.functionWrapperLogger(totalStaked, params);
+        },
+        amountCanBeStaked: async function(params) {
+          return this.functionWrapperLogger(amountCanBeStaked, params);
+        },
+        stake
+      }).mount();
     </script>
+
+    <div v-scope @vue:mounted="setAccountIds">
+      <div>
+        <h3>Set chain</h3>
+        <div v-for="name in chainNames" :key="name">
+          <input type="radio" name="chain" :value="name" @click="setChainNameOrUrl" />
+          <label>{{name}}</label>
+        </div>
+        <div>
+          <input type="text" @input="setChainNameOrUrl" >
+        </div>
+        <div>Value: {{chainNameOrUrl}}</div>
+      </div>
+      <div>
+        <h3>Set account</h3>
+        <div v-for="accountId in accountIds" :key="accountId">
+          <input type="radio" name="account" :value="accountId" @click="setAccountOrAccountIdOrAddress" />
+          <label>{{accountId}}</label>
+        </div>
+        <div>
+          <input type="text" @input="setAccountOrAccountIdOrAddress" >
+        </div>
+        <div>Value: {{accountOrAccountIdOrAddress}}</div>
+      </div>
+
+      <h3>Actions</h3>
+      <div>
+        <button style="display: block;" @click="getAccountList">getAccountList</button>
+        <button style="display: block;" @click="getAccountById([accountOrAccountIdOrAddress])">getAccountById</button>
+        <button style="display: block;" @click="initSDK([chainNameOrUrl])">initSDK</button>
+        <button style="display: block;" @click="totalStaked([accountOrAccountIdOrAddress, null, chainNameOrUrl])">totalStaked</button>
+        <button style="display: block;" @click="amountCanBeStaked([accountOrAccountIdOrAddress, null, chainNameOrUrl])">amountCanBeStaked</button>
+      </div>
+
+      <h3>Output</h3>
+      <button style="display: block;" @click="output=''">clear</button>
+      <div>{{output}}</div>
+    </div>
   </body>
 </html>

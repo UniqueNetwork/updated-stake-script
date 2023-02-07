@@ -71,7 +71,7 @@ export async function totalStaked(account: IPolkadotExtensionAccount, sdkInstanc
     if (!account) {
         throw new Error('Set account for totalStaked function');
     }
-    let sdk = initSdkHelper(sdkInstance, chainName);
+    let sdk = initSdkHelper(sdkInstance, chainName)
     const response = await sdk.stateQuery.execute({
             endpoint: 'rpc',
             module: 'appPromotion',
@@ -98,7 +98,7 @@ export async function stake(amountInit: number, account: IPolkadotExtensionAccou
     if (!account) {
         throw new Error('Set account for totalStaked function');
     }
-    let sdk = initSdkHelper(sdkInstance, chainName);
+    let sdk = initSdkHelper(sdkInstance, chainName)
 
     const {decimals} = await sdk.common.chainProperties()
 
@@ -131,7 +131,7 @@ export async function unstake(account: IPolkadotExtensionAccount, sdkInstance?: 
 }
 
 async function balanceCanBeStaked(amount: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: sdkBaseUrl) {
-    console.log('amount', amount);
+    console.log('amount', amount)
 
     if (!account) {
         throw new Error('Set account for balanceCanBeStaked function');
