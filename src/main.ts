@@ -48,30 +48,30 @@ export async function getAccountById(accountId: string, accounts?: IPolkadotExte
 }
 
 // helper
-function initSdkHelper(sdkInstance?: Client , nameChain?: string): Client {
-    if (!sdkInstance && !nameChain) {
-        throw new Error('Set one of the parameters sdkInstance, nameChain for totalStaked function');
+function initSdkHelper(sdkInstance?: Client , chainName?: string): Client {
+    if (!sdkInstance && !chainName) {
+        throw new Error('Set one of the parameters sdkInstance, chainName for totalStaked function');
     }
-    return sdkInstance || initSDK(nameChain);
+    return sdkInstance || initSDK(chainName);
 }
 
-export function initSDK(nameChain: string) {
-    if (!SDK_BASE_URLS[nameChain]) {
+export function initSDK(chainName: string) {
+    if (!SDK_BASE_URLS[chainName]) {
         throw new Error('Chain not found');
     }
     const options = {
-        baseUrl: SDK_BASE_URLS[nameChain],
+        baseUrl: SDK_BASE_URLS[chainName],
     }
     const client = new Sdk(options);
     console.log(`SDK initialized at ${client.options.baseUrl}`);
     return client;
 }
 
-export async function totalStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: string) {
+export async function totalStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: string) {
     if (!account) {
         throw new Error('Set account for totalStaked function');
     }
-    let sdk = initSdkHelper(sdkInstance, nameChain);
+    let sdk = initSdkHelper(sdkInstance, chainName);
     const response = await sdk.stateQuery.execute({
             endpoint: 'rpc',
             module: 'appPromotion',
@@ -83,22 +83,22 @@ export async function totalStaked(account: IPolkadotExtensionAccount, sdkInstanc
     return response;
 }
 
-export async function amountCanBeStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: string) {
+export async function amountCanBeStaked(account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: string) {
     if (!account) {
         throw new Error('Set account for totalStaked function');
     }
-    let sdk = initSdkHelper(sdkInstance, nameChain);
+    let sdk = initSdkHelper(sdkInstance, chainName);
 
     const balanceResponse = await sdk.balance.get({address: account.address})
     console.log(balanceResponse.availableBalance);
     return balanceResponse.availableBalance;
 }
 
-async function stake(amountInit: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: sdkBaseUrl) {
+export async function stake(amountInit: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: string) {
     if (!account) {
         throw new Error('Set account for totalStaked function');
     }
-    let sdk = initSdkHelper(sdkInstance, nameChain);
+    let sdk = initSdkHelper(sdkInstance, chainName);
 
     const {decimals} = await sdk.common.chainProperties()
 
@@ -114,11 +114,11 @@ async function stake(amountInit: number, account: IPolkadotExtensionAccount, sdk
     })
 }
 
-async function unstake(account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: sdkBaseUrl) {
+export async function unstake(account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: sdkBaseUrl) {
     if (!account) {
         throw new Error('Set account for totalStaked function');
     }
-    let sdk = initSdkHelper(sdkInstance, nameChain);
+    let sdk = initSdkHelper(sdkInstance, chainName);
 
     console.log('After the end of week this sum becomes completely free for further use');
 
@@ -130,14 +130,14 @@ async function unstake(account: IPolkadotExtensionAccount, sdkInstance?: Client 
     })
 }
 
-async function balanceCanBeStaked(amount: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: sdkBaseUrl) {
+async function balanceCanBeStaked(amount: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: sdkBaseUrl) {
     console.log('amount', amount);
 
     if (!account) {
         throw new Error('Set account for balanceCanBeStaked function');
     }
 
-    let client = initSdkHelper(sdkInstance, nameChain);
+    let client = initSdkHelper(sdkInstance, chainName);
 
     const initBalanceResponse = await client.balance.get({address: account.address})
     console.log(initBalanceResponse)
@@ -146,7 +146,7 @@ async function balanceCanBeStaked(amount: number, account: IPolkadotExtensionAcc
     return initBalanceResponse.availableBalance;
 }
 
-const getBalanceAndStake = async (amount: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , nameChain?: sdkBaseUrl) => {
+const getBalanceAndStake = async (amount: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: sdkBaseUrl) => {
     console.log('amount', amount)
 
     // весь застейченный баланс отображается в lockedBalance

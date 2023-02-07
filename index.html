@@ -11,7 +11,15 @@
 
     <script type="module" src="/src/main.ts"></script>
     <script type="module">
-      import { SDK_BASE_URLS, getAccountList, getAccountById, initSDK, totalStaked, amountCanBeStaked } from '/src/main.ts';
+      import {
+        SDK_BASE_URLS,
+        getAccountList,
+        getAccountById,
+        initSDK,
+        totalStaked,
+        amountCanBeStaked,
+        stake
+      } from '/src/main.ts';
 
       (async () => {
         console.log('SDK_BASE_URLS');
@@ -83,8 +91,8 @@
         const totalStakedButton = document.createElement('button')
         totalStakedButton.addEventListener('click', async () => {
           const account = await getAccountById(document.querySelector('input[name="account"]:checked').value);
-          const nameChain = document.querySelector('input[name="chain"]:checked').value;
-          totalStaked(account, undefined, nameChain);
+          const chainName = document.querySelector('input[name="chain"]:checked').value;
+          totalStaked(account, undefined, chainName);
         });
         totalStakedButton.innerHTML = 'totalStaked';
         document.body.appendChild(totalStakedButton);
@@ -93,13 +101,22 @@
         const amountCanBeStakedButton = document.createElement('button')
         amountCanBeStakedButton.addEventListener('click', async () => {
           const account = await getAccountById(document.querySelector('input[name="account"]:checked').value);
-          const nameChain = document.querySelector('input[name="chain"]:checked').value;
-          amountCanBeStaked(account, undefined, nameChain);
+          const chainName = document.querySelector('input[name="chain"]:checked').value;
+          amountCanBeStaked(account, undefined, chainName);
         });
         amountCanBeStakedButton.innerHTML = 'amountCanBeStaked';
         document.body.appendChild(amountCanBeStakedButton);
         document.body.appendChild(document.createElement('br'));
 
+        const stakeButton = document.createElement('button')
+        stakeButton.addEventListener('click', async () => {
+          const account = await getAccountById(document.querySelector('input[name="account"]:checked').value);
+          const chainName = document.querySelector('input[name="chain"]:checked').value;
+          await stake(account, undefined, chainName);
+        });
+        stakeButton.innerHTML = 'stake';
+        document.body.appendChild(stakeButton);
+        document.body.appendChild(document.createElement('br'));
 
       })()
     </script>
