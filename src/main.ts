@@ -25,8 +25,8 @@ export async function getAccountList(): Promise<IPolkadotExtensionAccount[]> {
     return enablingResult.accounts;
 }
 
-// helper
-export async function getAccountOrAddress(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, accounts?: IPolkadotExtensionAccount[]): Promise<IPolkadotExtensionAccount | string> {
+export async function getAccountOrAddress(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, accounts?: IPolkadotExtensionAccount[]):
+    Promise<IPolkadotExtensionAccount | string> {
     if (!accountOrAccountIdOrAddress) throw new Error('accountOrAccountIdOrAddress parameter in function getAccountOrAddress is empty')
     if (typeof accountOrAccountIdOrAddress === 'object') {
         if (!accountOrAccountIdOrAddress.address) throw new Error('Invalid input parameters')
@@ -47,7 +47,7 @@ export async function getAccountOrAddress(accountOrAccountIdOrAddress: IPolkadot
 
 export async function getAccountById(accountId: string, accounts?: IPolkadotExtensionAccount[]): Promise<IPolkadotExtensionAccount> {
     const account = await getAccountOrAddress(accountId, accounts)
-    if (typeof account === 'string') throw new Error('The input parameter is of the wrong type')
+    if (typeof account === 'string') throw new Error('Account not found')
     return account
 }
 
@@ -57,7 +57,6 @@ function normalizeUrl(url: string): string {
     return url;
 }
 
-// helper
 export function initSDK(sdkInstanceOrChainNameOrUrl?: Client | string): Client {
     if (!sdkInstanceOrChainNameOrUrl) throw new Error('sdkInstanceOrChainNameOrUrl parameter in function initSDK is empty')
     if (typeof sdkInstanceOrChainNameOrUrl === 'object') {
@@ -75,9 +74,8 @@ export function initSDK(sdkInstanceOrChainNameOrUrl?: Client | string): Client {
     return client
 }
 
-export async function totalStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string): Promise<number> {
-    console.log('sdkInstanceOrChainNameOrUrl')
-    console.log(sdkInstanceOrChainNameOrUrl)
+export async function totalStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string):
+    Promise<number> {
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
     const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
@@ -94,7 +92,8 @@ export async function totalStaked(accountOrAccountIdOrAddress: IPolkadotExtensio
     return amountFloatFormat(sdk, result.human)
 }
 
-export async function amountCanBeStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string): Promise<number> {
+export async function amountCanBeStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string):
+    Promise<number> {
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
     const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
@@ -122,12 +121,16 @@ async function amountFloatFormat(sdk: Client, initAmount: string): Promise<numbe
 
     const amountWithoutComma = initAmount.replace(/,/gi, '')
     const lengthString = amountWithoutComma.length
-    const amountWithDecimalPoint = amountWithoutComma.substring(0, lengthString - decimals) + '.' + amountWithoutComma.substring(lengthString - decimals);
+    const amountWithDecimalPoint = amountWithoutComma.substring(0, lengthString - decimals) + '.' + amountWithoutComma.substring(lengthString - decimals)
 
     return Number(amountWithDecimalPoint)
 }
 
-export async function stake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string, initAmount: number | string): Promise<{success: boolean, error?: object}> {
+export async function stake(
+    accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
+    sdkInstanceOrChainNameOrUrl: Client | string,
+    initAmount: number | string
+): Promise<{success: boolean, error?: object}> {
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
     if (typeof account === 'string') throw new Error('Failed to get an account')
@@ -146,7 +149,8 @@ export async function stake(accountOrAccountIdOrAddress: IPolkadotExtensionAccou
     return { success: true }
 }
 
-export async function unstake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string): Promise<{success: boolean, error?: object}> {
+export async function unstake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string):
+    Promise<{success: boolean, error?: object}> {
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
     if (typeof account === 'string') throw new Error('Failed to get an account')

@@ -55,7 +55,14 @@
         },
         async functionWrapperLogger(func, paramsArray) {
           this.output = '';
-          const result = await func(...paramsArray);
+          let result = null;
+          try {
+            result = await func(...paramsArray);
+          } catch (e) {
+            console.log(e)
+            this.output = `Error: ${e.message}`;
+            return result;
+          }
           console.log(result);
           try {
             this.output = JSON.stringify(result, null, 2)
