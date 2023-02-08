@@ -127,7 +127,7 @@ async function amountFloatFormat(sdk: Client, initAmount: string): Promise<numbe
     return Number(amountWithDecimalPoint)
 }
 
-export async function stake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string, initAmount: number | string): Promise<{success: boolean}> {
+export async function stake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string, initAmount: number | string): Promise<{success: boolean, error?: object}> {
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
     if (typeof account === 'string') throw new Error('Failed to get an account')
@@ -142,11 +142,11 @@ export async function stake(accountOrAccountIdOrAddress: IPolkadotExtensionAccou
         args: [amount],
     }, account.uniqueSdkSigner)
     console.log(result)
-    if (result.error) throw new Error(result.error.message)
+    if (result.error)  return { success: false, error: result.error }
     return { success: true }
 }
 
-export async function unstake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string): Promise<{success: boolean}> {
+export async function unstake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string): Promise<{success: boolean, error?: object}> {
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
     if (typeof account === 'string') throw new Error('Failed to get an account')
@@ -158,7 +158,7 @@ export async function unstake(accountOrAccountIdOrAddress: IPolkadotExtensionAcc
         args: [],
     }, account.uniqueSdkSigner)
     console.log(result)
-    if (result.error) throw new Error(result.error.message)
+    if (result.error) return { success: false, error: result.error }
     console.log('After the end of week this sum becomes completely free for further use')
     return { success: true }
 }

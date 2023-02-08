@@ -58,7 +58,7 @@
           const result = await func(...paramsArray);
           console.log(result);
           try {
-            this.output = JSON.stringify(result, null, 2);
+            this.output = JSON.stringify(result, null, 2)
           } catch (e) {
             this.output = 'Error parsing result object';
           }
@@ -135,7 +135,7 @@
       <div v-if="sdk">Received instance sdk</div>{{sdk}}
       <div v-if="account">Received account</div>
       <button style="display: block;" @click="output=''; sdk=undefined; account=undefined">clear</button>
-      <div>{{output}}</div>
+      <pre >{{output}}</pre>
     </div>
   </body>
 </html>
