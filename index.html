@@ -96,8 +96,8 @@
       <div>
         <h3>Set chain</h3>
         <div v-for="name in chainNames" :key="name">
-          <input type="radio" name="chain" :value="name" @click="setChainNameOrUrl" />
-          <label>{{name}}</label>
+          <input :id="name" type="radio" name="chain" :value="name" @click="setChainNameOrUrl" />
+          <label :for="name">{{name}}</label>
         </div>
         <div>
           <input type="text" @input="setChainNameOrUrl" >
@@ -107,8 +107,8 @@
       <div>
         <h3>Set account</h3>
         <div v-for="accountId in accountIds" :key="accountId">
-          <input type="radio" name="account" :value="accountId" @click="setAccountIdOrAddress" />
-          <label>{{accountId}}</label>
+          <input :id="accountId" type="radio" name="account" :value="accountId" @click="setAccountIdOrAddress" />
+          <label :for="accountId">{{accountId}}</label>
         </div>
         <div>
           <input type="text" @input="setAccountIdOrAddress" >
