@@ -83,7 +83,7 @@ export function initSDK(sdkInstanceOrChainNameOrUrl?: Client | string): Client {
     return client
 }
 
-export async function totalStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string) {
+export async function totalStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string): number {
     console.log('sdkInstanceOrChainNameOrUrl')
     console.log(sdkInstanceOrChainNameOrUrl)
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
@@ -97,23 +97,24 @@ export async function totalStaked(accountOrAccountIdOrAddress: IPolkadotExtensio
         },
         {args: [{Substrate: address} as any]}
     )
-    // :todo value human to float
-    return result
+    console.log(result)
+    if (result.empty) return 0
+    return amountFloatFormat(sdk, result.human)
 }
 
-export async function amountCanBeStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string) {
+export async function amountCanBeStaked(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string): number {
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
     const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
 
     const balanceResponse = await sdk.balance.get({address})
     console.log(balanceResponse.availableBalance);
-    return balanceResponse.availableBalance;
+    return Number(balanceResponse.availableBalance.amount);
 }
 
-async function convertAmount(sdk: Client, amountInit: number | string): Promise<string> {
+async function amountChainFormat(sdk: Client, initAmount: number | string): Promise<string> {
     const { decimals } = await sdk.common.chainProperties()
-    const amountInitString = typeof amountInit === 'number' ? amountInit.toString() : amountInit
+    const amountInitString = typeof initAmount === 'number' ? initAmount.toString() : initAmount
     const arr = amountInitString.split('.')
     let amount = arr[0] !== '0' ? arr[0] : ''
     if (arr[1]) {
@@ -124,20 +125,33 @@ async function convertAmount(sdk: Client, amountInit: number | string): Promise<
     return amount
 }
 
-export async function stake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string, amountInit: number | string) {
+async function amountFloatFormat(sdk: Client, initAmount: string): Promise<number> {
+    const { decimals } = await sdk.common.chainProperties()
+
+    const amountWithoutComma = initAmount.replace(/,/gi, '')
+    const lengthString = amountWithoutComma.length
+    const amountWithDecimalPoint = amountWithoutComma.substring(0, lengthString - decimals) + '.' + amountWithoutComma.substring(lengthString - decimals);
+
+    return Number(amountWithDecimalPoint)
+}
+
+export async function stake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string, initAmount: number | string): {success: boolean, error?: object} {
     const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
     const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
     if (typeof account === 'string') throw new Error('Failed to get an account')
 
-    if (!amountInit) throw new Error('Amount parameter is empty')
-    const amount = await convertAmount(sdk, amountInit);
+    if (!initAmount) throw new Error('Amount parameter is empty')
+    const amount = await amountChainFormat(sdk, initAmount);
 
-    return sdk.extrinsics.submitWaitResult({
+    const result = await sdk.extrinsics.submitWaitResult({
         address: account.address,
         section: 'appPromotion',
         method: 'stake',
         args: [amount],
-    }, account.uniqueSdkSigner);
+    }, account.uniqueSdkSigner)
+    console.log(result)
+    if (result.error) throw new Error(result.error.message)
+    return { success: true }
 }
 
 export async function unstake(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string) {
@@ -151,8 +165,10 @@ export async function unstake(accountOrAccountIdOrAddress: IPolkadotExtensionAcc
         method: 'unstake',
         args: [],
     }, account.uniqueSdkSigner)
+    console.log(result)
+    if (result.error) throw new Error(result.error.message)
     console.log('After the end of week this sum becomes completely free for further use')
-    return result
+    return { success: true }
 }
 
 async function balanceCanBeStaked(amount: number, account: IPolkadotExtensionAccount, sdkInstance?: Client , chainName?: sdkBaseUrl) {
