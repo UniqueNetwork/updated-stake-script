@@ -2,11 +2,6 @@
 # yarn lockfile v1
 
 
-"@esbuild/linux-x64@0.16.17":
-  "integrity" "sha512-mdPjPxfnmoqhgpiEArqi4egmBAMYvaObgn4poorpUaqmvzzbvqbowRllQ+ZgzGVMGKaPkqUmPDOOFQRUFDmeUw=="
-  "resolved" "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.16.17.tgz"
-  "version" "0.16.17"
-
 "@ethersproject/abi@^5.0.0":
   "integrity" "sha512-351ktp42TiRcYB3H1OP8yajPeAQstMW/yCFokj/AthP9bLHzQFPlOrxOcwYEDkUAICmOHljvN4K39OMTMUa9RA=="
   "resolved" "https://registry.npmjs.org/@ethersproject/abi/-/abi-5.7.0.tgz"
