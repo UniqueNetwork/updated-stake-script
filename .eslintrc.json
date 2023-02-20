@@ -1,0 +1,25 @@
+{
+    "plugins": [
+        "prettier"
+    ],
+    "extends": [
+        "airbnb/base",
+        "airbnb-typescript/base",
+        "prettier"
+    ],
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "env": {
+        "es2020": true,
+        "browser": true
+    },
+    "rules": {
+        "import/prefer-default-export": "off",
+        "import/no-extraneous-dependencies": "off",
+        "@typescript-eslint/no-useless-constructor": "off",
+        "prettier/prettier": "error",
+        "no-console": 2,
+        "semi": [2, "never"]
+    }
+}
