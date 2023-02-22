@@ -27,22 +27,22 @@ export async function getAccountList(): Promise<IPolkadotExtensionAccount[]> {
 
 export async function getAccountOrAddress(
   accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
-  accounts?: IPolkadotExtensionAccount[],
+  receivedAccounts?: IPolkadotExtensionAccount[],
 ): Promise<IPolkadotExtensionAccount | string> {
-  if (!accountOrAccountIdOrAddress)
+  if (!accountOrAccountIdOrAddress) {
     throw new Error('accountOrAccountIdOrAddress parameter in function getAccountOrAddress is empty')
+  }
   if (typeof accountOrAccountIdOrAddress === 'object') {
-    if (!accountOrAccountIdOrAddress.address) throw new Error('Invalid input parameters')
+    if (!accountOrAccountIdOrAddress.address) {
+      throw new Error('Invalid input parameters')
+    }
     return accountOrAccountIdOrAddress
   }
-  if (!accounts) {
-    accounts = await getAccountList()
-  }
+  const accounts = receivedAccounts || (await getAccountList())
   const account = accounts.find(el => el.id === accountOrAccountIdOrAddress)
   if (account) return account
-  const address = Address.validate.substrateAddress(accountOrAccountIdOrAddress)
-  // check address
-  if (!(account || address)) {
+  const isValidAddress = Address.validate.substrateAddress(accountOrAccountIdOrAddress)
+  if (!isValidAddress) {
     throw new Error('The input parameter is neither an address nor an account id')
   }
   return accountOrAccountIdOrAddress
@@ -172,9 +172,13 @@ export async function stake(
 ): Promise<{ success: boolean; error?: object }> {
   const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
   const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
-  if (typeof account === 'string') throw new Error('Failed to get an account')
+  if (typeof account === 'string') {
+    throw new Error('Failed to get an account')
+  }
 
-  if (!initAmount) throw new Error('Amount parameter is empty')
+  if (!initAmount) {
+    throw new Error('The initAmount input parameter is empty')
+  }
   const amount = await amountChainFormat(sdk, initAmount)
 
   const result: any = await sdk.extrinsics.submitWaitResult(
@@ -197,7 +201,9 @@ export async function unstake(
 ): Promise<{ success: boolean; error?: object }> {
   const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
   const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
-  if (typeof account === 'string') throw new Error('Failed to get an account')
+  if (typeof account === 'string') {
+    throw new Error('Failed to get an account')
+  }
 
   const result: any = await sdk.extrinsics.submitWaitResult(
     {

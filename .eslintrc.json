@@ -19,7 +19,7 @@
         "import/no-extraneous-dependencies": "off",
         "@typescript-eslint/no-useless-constructor": "off",
         "prettier/prettier": "error",
-        "no-console": 2,
+        "no-console": 1,
         "semi": [2, "never"]
     }
 }
