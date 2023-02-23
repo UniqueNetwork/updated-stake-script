@@ -1,3 +1,4 @@
+// @ts-ignore
 import { createApp } from 'https://unpkg.com/petite-vue?module'
 import {
   SDK_BASE_URLS,
@@ -38,6 +39,7 @@ createApp({
   },
   setAmount(value: any) {
     if (value.target) {
+      // @ts-ignore
       // eslint-disable-next-line no-restricted-globals
       this.amount = event?.target?.value
     }

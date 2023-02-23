@@ -41,9 +41,14 @@ export async function getAccountOrAddress(
   const accounts = receivedAccounts || (await getAccountList())
   const account = accounts.find(el => el.id === accountOrAccountIdOrAddress)
   if (account) return account
-  const isValidAddress = Address.validate.substrateAddress(accountOrAccountIdOrAddress)
+  let isValidAddress = false
+  try {
+    isValidAddress = Address.validate.substrateAddress(accountOrAccountIdOrAddress)
+  } catch (e) {
+    //
+  }
   if (!isValidAddress) {
-    throw new Error('The input parameter is neither an address nor an account id')
+    throw new Error('The input parameter is neither an address nor an account id for this wallet')
   }
   return accountOrAccountIdOrAddress
 }
