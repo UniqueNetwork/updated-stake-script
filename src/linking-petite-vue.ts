@@ -6,6 +6,7 @@ import {
   getAccountById,
   initSDK,
   totalStaked,
+  stakesPerAccount,
   amountCanBeStaked,
   stake,
   unstake,
@@ -77,6 +78,9 @@ createApp({
   },
   async totalStaked(params: any) {
     return this.functionWrapperLogger(totalStaked, params)
+  },
+  async stakesPerAccount(params: any) {
+    return this.functionWrapperLogger(stakesPerAccount, params)
   },
   async amountCanBeStaked(params: any) {
     return this.functionWrapperLogger(amountCanBeStaked, params)

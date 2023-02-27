@@ -127,6 +127,23 @@ export async function totalStaked(
   return amountFloatFormat(sdk, result.human)
 }
 
+export async function stakesPerAccount(accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string, sdkInstanceOrChainNameOrUrl: Client | string):
+  Promise<number> {
+  const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
+  const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
+  const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
+
+  const result = await sdk.stateQuery.execute({
+      endpoint: 'query',
+      module: 'appPromotion',
+      method: 'stakesPerAccount',
+    },
+    {args: [address]}
+  )
+  return Number(result.human)
+}
+
+
 export async function amountCanBeStaked(
   accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
   sdkInstanceOrChainNameOrUrl: Client | string,
