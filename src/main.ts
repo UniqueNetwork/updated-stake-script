@@ -1,4 +1,4 @@
-import { Client, Sdk } from '@unique-nft/sdk'
+import { Client, Sdk, ExtrinsicResultResponse } from '@unique-nft/sdk'
 import Extension, { IPolkadotExtensionAccount } from '@unique-nft/utils/extension'
 import { Address } from '@unique-nft/utils'
 
@@ -191,7 +191,7 @@ export async function stake(
   accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
   sdkInstanceOrChainNameOrUrl: Client | string,
   initAmount: number | string,
-): Promise<{ success: boolean; error?: object }> {
+): Promise<ExtrinsicResultResponse<any> & { success: boolean; }> {
   const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
   const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
   if (typeof account === 'string') {
@@ -212,15 +212,18 @@ export async function stake(
     },
     account.uniqueSdkSigner,
   )
-  console.log(result)
-  if (result.error) return { success: false, error: result.error }
-  return { success: true }
+  if (result.error) return { ...result, success: false }
+  return {
+    ...result,
+    link: `extrinsic/${result.block.header.number}-${result.blockIndex}`,
+    success: true,
+  }
 }
 
 export async function unstake(
   accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
-  sdkInstanceOrChainNameOrUrl: Client | string,
-): Promise<{ success: boolean; error?: object }> {
+  sdkInstanceOrChainNameOrUrl: Client | string
+): Promise<ExtrinsicResultResponse<any> & { success: boolean; }> {
   const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
   const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
   if (typeof account === 'string') {
@@ -236,8 +239,11 @@ export async function unstake(
     },
     account.uniqueSdkSigner,
   )
-  console.log(result)
-  if (result.error) return { success: false, error: result.error }
+  if (result.error) return { ...result, success: false }
   console.log('After the end of week this sum becomes completely free for further use')
-  return { success: true }
+  return {
+    ...result,
+    link: `extrinsic/${result.block.header.number}-${result.blockIndex}`,
+    success: true
+  }
 }
