@@ -213,9 +213,13 @@ export async function stake(
     account.uniqueSdkSigner,
   )
   if (result.error) return { ...result, success: false }
+
+  const chainPropertiesResult = await sdk.common.chainProperties();
+
   return {
     ...result,
-    link: `extrinsic/${result.block.header.number}-${result.blockIndex}`,
+    link: `extrinsic/${result.block.header.number}`,
+    polkadotLink: `https://polkadot.js.org/apps/?rpc=${chainPropertiesResult.wsUrl}#/explorer/query/${result.block.header.number}`,
     success: true,
   }
 }
@@ -234,16 +238,20 @@ export async function unstake(
     {
       address: account.address,
       section: 'appPromotion',
-      method: 'unstake',
+      method: 'unstakeAll',
       args: [],
     },
     account.uniqueSdkSigner,
   )
   if (result.error) return { ...result, success: false }
+
+  const chainPropertiesResult = await sdk.common.chainProperties();
+
   console.log('After the end of week this sum becomes completely free for further use')
   return {
     ...result,
-    link: `extrinsic/${result.block.header.number}-${result.blockIndex}`,
+    link: `extrinsic/${result.block.header.number}`,
+    polkadotLink: `https://polkadot.js.org/apps/?rpc=${chainPropertiesResult.wsUrl}#/explorer/query/${result.block.header.number}`,
     success: true
   }
 }
