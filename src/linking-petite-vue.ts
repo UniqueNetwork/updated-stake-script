@@ -9,6 +9,7 @@ import {
   stakesPerAccount,
   amountCanBeStaked,
   stake,
+  unstakePartial,
   unstake,
 } from './main'
 
@@ -87,6 +88,9 @@ createApp({
   },
   async stake(params: any) {
     return this.functionWrapperLogger(stake, params)
+  },
+  async unstakePartial(params: any) {
+    return this.functionWrapperLogger(unstakePartial, params)
   },
   async unstake(params: any) {
     return this.functionWrapperLogger(unstake, params)

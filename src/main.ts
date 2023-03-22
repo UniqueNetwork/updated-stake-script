@@ -3,8 +3,9 @@ import Extension, { IPolkadotExtensionAccount } from '@unique-nft/utils/extensio
 import { Address } from '@unique-nft/utils'
 
 export const SDK_BASE_URLS = <const>{
-  opal: 'https://rest.opal.uniquenetwork.dev/v1',
-  quartz: 'https://rest.quartz.uniquenetwork.dev/v1',
+  opal: 'https://rest.unique.network/opal/v1',
+  quartz: 'https://rest.unique.network/quartz/v1',
+  unique: 'https://rest.unique.network/unique/v1',
 }
 type SDK_NETWORK = keyof typeof SDK_BASE_URLS
 const SDK_NETWORKS = Object.keys(SDK_BASE_URLS) as SDK_NETWORK[]
@@ -240,6 +241,44 @@ export async function unstake(
       section: 'appPromotion',
       method: 'unstakeAll',
       args: [],
+    },
+    account.uniqueSdkSigner,
+  )
+  if (result.error) return { ...result, success: false }
+
+  const chainPropertiesResult = await sdk.common.chainProperties();
+
+  console.log('After the end of week this sum becomes completely free for further use')
+  return {
+    ...result,
+    link: `extrinsic/${result.block.header.number}`,
+    polkadotLink: `https://polkadot.js.org/apps/?rpc=${chainPropertiesResult.wsUrl}#/explorer/query/${result.block.header.number}`,
+    success: true
+  }
+}
+
+export async function unstakePartial(
+  accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
+  sdkInstanceOrChainNameOrUrl: Client | string,
+  initAmount: number | string,
+): Promise<ExtrinsicResultResponse<any> & { success: boolean; }> {
+  const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
+  const account = await getAccountOrAddress(accountOrAccountIdOrAddress)
+  if (typeof account === 'string') {
+    throw new Error('Failed to get an account')
+  }
+
+  if (!initAmount) {
+    throw new Error('The initAmount input parameter is empty')
+  }
+  const amount = await amountChainFormat(sdk, initAmount)
+
+  const result: any = await sdk.extrinsics.submitWaitResult(
+    {
+      address: account.address,
+      section: 'appPromotion',
+      method: 'unstakePartial',
+      args: [amount],
     },
     account.uniqueSdkSigner,
   )

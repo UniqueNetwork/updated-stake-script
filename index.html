@@ -41,13 +41,13 @@
         <button style="display: block;" @click="getAccountList">getAccountList</button>
         <button style="display: block;" @click="getAccountById([accountIdOrAddress])">getAccountById</button>
         <button style="display: block;" @click="initSDK([chainNameOrUrl])">initSDK</button>
-        <div v-for="[func, name] in [[totalStaked, 'totalStaked'], [stakesPerAccount, 'stakesPerAccount'], [amountCanBeStaked, 'amountCanBeStaked'], [stake, 'stake'], [unstake, 'unstake']]" :key="name">
-          <button @click="func([accountIdOrAddress, chainNameOrUrl, name === 'stake' ? amount : undefined])">{{name}}</button>
-          <button :disabled="!sdk" @click="func([accountIdOrAddress, sdk, name === 'stake' ? amount : undefined])">{{name}} (use sdk object)</button>
-          <button :disabled="!account" @click="func([account, chainNameOrUrl, name === 'stake' ? amount : undefined])">{{name}} (use account object)</button>
-          <button :disabled="!sdk || !account" @click="func([account, sdk, name === 'stake' ? amount : undefined])">{{name}} (use sdk and account objects)</button>
-          <input v-if="name === 'stake'" placeholder="amount" type="text" @input="setAmount" >
-          <span v-if="name === 'stake'">{{amount}}</span>
+        <div v-for="[func, name] in [[totalStaked, 'totalStaked'], [stakesPerAccount, 'stakesPerAccount'], [amountCanBeStaked, 'amountCanBeStaked'], [stake, 'stake'], [unstakePartial, 'unstakePartial'], [unstake, 'unstake']]" :key="name">
+          <button @click="func([accountIdOrAddress, chainNameOrUrl, ((name === 'stake' || name === 'unstakePartial') || name === 'unstakePartial') ? amount : undefined])">{{name}}</button>
+          <button :disabled="!sdk" @click="func([accountIdOrAddress, sdk, (name === 'stake' || name === 'unstakePartial') ? amount : undefined])">{{name}} (use sdk object)</button>
+          <button :disabled="!account" @click="func([account, chainNameOrUrl, (name === 'stake' || name === 'unstakePartial') ? amount : undefined])">{{name}} (use account object)</button>
+          <button :disabled="!sdk || !account" @click="func([account, sdk, (name === 'stake' || name === 'unstakePartial') ? amount : undefined])">{{name}} (use sdk and account objects)</button>
+          <input v-if="(name === 'stake' || name === 'unstakePartial')" placeholder="amount" type="text" @input="setAmount" >
+          <span v-if="(name === 'stake' || name === 'unstakePartial')">{{amount}}</span>
         </div>
       </div>
 
