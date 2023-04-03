@@ -1,0 +1,28 @@
+name: Build IIFE (and save as artifact)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Build
+      run: |
+        yarn
+        yarn build:iife
+        
+    - name: Save artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: staking-iife
+        path: dist/*
