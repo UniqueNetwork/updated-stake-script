@@ -159,6 +159,20 @@ const getLocksSum = async (sdk: Client, address: string, id: string): Promise<bi
   }, 0n) || 0n;
 }
 
+export async function getVestedSum(
+  accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
+  sdkInstanceOrChainNameOrUrl: Client | string,
+): Promise<number> {
+  const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
+  const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
+  const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
+
+  const vestedSum = await getLocksSum(sdk, address, 'ormlvest')
+  console.dir({ vestedSum }, {depth: null});
+
+  return amountFloatFormat(sdk, vestedSum.toString());
+}
+
 export async function amountCanBeStaked(
   accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
   sdkInstanceOrChainNameOrUrl: Client | string,

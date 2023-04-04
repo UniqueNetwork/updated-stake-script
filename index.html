@@ -41,7 +41,7 @@
         <button style="display: block;" @click="getAccountList">getAccountList</button>
         <button style="display: block;" @click="getAccountById([accountIdOrAddress])">getAccountById</button>
         <button style="display: block;" @click="initSDK([chainNameOrUrl])">initSDK</button>
-        <div v-for="[func, name] in [[totalStaked, 'totalStaked'], [stakesPerAccount, 'stakesPerAccount'], [amountCanBeStaked, 'amountCanBeStaked'], [stake, 'stake'], [unstakePartial, 'unstakePartial'], [unstake, 'unstake']]" :key="name">
+        <div v-for="[func, name] in [[totalStaked, 'totalStaked'], [stakesPerAccount, 'stakesPerAccount'], [amountCanBeStaked, 'amountCanBeStaked'], [getVestedSum, 'getVestedSum'], [stake, 'stake'], [unstakePartial, 'unstakePartial'], [unstake, 'unstake']]" :key="name">
           <button @click="func([accountIdOrAddress, chainNameOrUrl, ((name === 'stake' || name === 'unstakePartial') || name === 'unstakePartial') ? amount : undefined])">{{name}}</button>
           <button :disabled="!sdk" @click="func([accountIdOrAddress, sdk, (name === 'stake' || name === 'unstakePartial') ? amount : undefined])">{{name}} (use sdk object)</button>
           <button :disabled="!account" @click="func([account, chainNameOrUrl, (name === 'stake' || name === 'unstakePartial') ? amount : undefined])">{{name}} (use account object)</button>
