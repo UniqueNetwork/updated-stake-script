@@ -173,6 +173,21 @@ export async function getVestedSum(
   return amountFloatFormat(sdk, vestedSum.toString());
 }
 
+export async function getFreeBalance(
+  accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
+  sdkInstanceOrChainNameOrUrl: Client | string,
+): Promise<number> {
+  const sdk = initSDK(sdkInstanceOrChainNameOrUrl)
+  const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
+  const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
+
+  const { freeBalance } = await sdk.balance.get({ address })
+
+  console.dir({ freeBalance }, {depth: null});
+
+  return Number(freeBalance.amount);
+}
+
 export async function amountCanBeStaked(
   accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
   sdkInstanceOrChainNameOrUrl: Client | string,

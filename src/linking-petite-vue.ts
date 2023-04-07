@@ -12,6 +12,7 @@ import {
   unstakePartial,
   unstake,
   getVestedSum,
+  getFreeBalance,
 } from './main'
 
 createApp({
@@ -89,6 +90,9 @@ createApp({
   },
   async getVestedSum(params: any) {
     return this.functionWrapperLogger(getVestedSum, params)
+  },
+  async getFreeBalance(params: any) {
+    return this.functionWrapperLogger(getFreeBalance, params)
   },
   async stake(params: any) {
     return this.functionWrapperLogger(stake, params)
