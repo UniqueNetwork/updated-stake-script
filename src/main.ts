@@ -2,6 +2,8 @@ import { Client, Sdk, ExtrinsicResultResponse } from '@unique-nft/sdk'
 import Extension, { IPolkadotExtensionAccount } from '@unique-nft/utils/extension'
 import { Address } from '@unique-nft/utils'
 
+import { amountChainFormat, amountFloatFormat } from './uitls'
+
 export const SDK_BASE_URLS = <const>{
   opal: 'https://rest.unique.network/opal/v1',
   quartz: 'https://rest.unique.network/quartz/v1',
@@ -115,7 +117,7 @@ export async function totalStaked(
   const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
   const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
 
-  const result = await sdk.stateQuery.execute(
+  const result: { human: string, empty: any } = await sdk.stateQuery.execute(
     {
       endpoint: 'rpc',
       module: 'appPromotion',
@@ -197,47 +199,20 @@ export async function amountCanBeStaked(
   const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
 
   const { freeBalance } = await sdk.balance.get({ address })
+  const { decimals } = freeBalance;
 
   const free = BigInt(freeBalance.raw);
   const locksSum = await getLocksSum(sdk, address, 'appstake')
   const canBeStaked = (free - locksSum);
 
-  const formatted = await amountFloatFormat(sdk, canBeStaked.toString());
+  const formatted = await amountFloatFormat(decimals, canBeStaked.toString());
 
   console.dir({ free, locksSum, canBeStaked, formatted }, {depth: null});
 
   return formatted;
 }
 
-async function amountChainFormat(sdk: Client, initAmount: number | string): Promise<string> {
-  const { decimals } = await sdk.common.chainProperties()
-  const amountInitString = typeof initAmount === 'number' ? initAmount.toString() : initAmount
-  const arr = amountInitString.split('.')
-  let amount = arr[0] !== '0' ? arr[0] : ''
-  if (arr[1]) {
-    amount +=
-      arr[1] +
-      Array(decimals - arr[1].length)
-        .fill('0')
-        .join('')
-  } else {
-    amount += Array(decimals).fill('0').join('')
-  }
-  return amount
-}
 
-async function amountFloatFormat(sdk: Client, initAmount: string): Promise<number> {
-  const { decimals } = await sdk.common.chainProperties()
-
-  const amountWithoutComma = initAmount.replace(/,/gi, '')
-  const lengthString = amountWithoutComma.length
-  const amountWithDecimalPoint = `${amountWithoutComma.substring(
-    0,
-    lengthString - decimals,
-  )}.${amountWithoutComma.substring(lengthString - decimals)}`
-
-  return Number(amountWithDecimalPoint)
-}
 
 export async function stake(
   accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
