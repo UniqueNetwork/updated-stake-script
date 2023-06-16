@@ -146,18 +146,18 @@ export async function stakesPerAccount(accountOrAccountIdOrAddress: IPolkadotExt
   return Number(result.human)
 }
 
-const getLocksSum = async (sdk: Client, address: string, id: string): Promise<bigint> => {
+const getLocksSum = async (sdk: Client, address: string, method, ids: string[] = []): Promise<bigint> => {
   const locks: { human: Array<{id: string, amount: string }>} = await sdk.stateQuery.execute(
     {
       endpoint: 'query',
       module: 'balances',
-      method: 'locks',
+      method,
     },
     { args: [address] },
   );
 
   return locks.human?.reduce((acc, lock) => {
-    return lock.id === id ? acc + BigInt(lock.amount.split(',').join('')) : acc;
+    return ids.includes(lock.id) ? acc + BigInt(lock.amount.split(',').join('')) : acc;
   }, 0n) || 0n;
 }
 
@@ -169,7 +169,7 @@ export async function getVestedSum(
   const accountOrAddress = await getAccountOrAddress(accountOrAccountIdOrAddress)
   const address = typeof accountOrAddress === 'string' ? accountOrAddress : accountOrAddress.address
 
-  const vestedSum = await getLocksSum(sdk, address, 'ormlvest')
+  const vestedSum = await getLocksSum(sdk, address, 'locks', ['ormlvest'])
   console.dir({ vestedSum }, {depth: null});
 
   return amountFloatFormat(sdk, vestedSum.toString());
@@ -202,7 +202,8 @@ export async function amountCanBeStaked(
   const { decimals } = freeBalance;
 
   const free = BigInt(freeBalance.raw);
-  const locksSum = await getLocksSum(sdk, address, 'appstake')
+  const locksSum = await getLocksSum(sdk, address, 'freezes', ['appstake', 'appstakeappstake'])
+
   const canBeStaked = (free - locksSum);
 
   const formatted = await amountFloatFormat(decimals, canBeStaked.toString());
@@ -211,8 +212,6 @@ export async function amountCanBeStaked(
 
   return formatted;
 }
-
-
 
 export async function stake(
   accountOrAccountIdOrAddress: IPolkadotExtensionAccount | string,
